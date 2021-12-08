@@ -49,7 +49,10 @@ class QrcodeTagLib {
     def text = { attrs, body ->
         if(body()){
             Map<String, String> information = [chl: body().trim()];
-            def base64Image = QRCodeService.generateQRCodeBase64(information, ,attrs?.logoLink, attrs?.logoBase64)
+            Integer scaleLogo = attrs.scaleLogo?.toString()?.toInteger() ?: 0
+            Integer width = attrs.width?.toString()?.toInteger() ?: 0
+            Integer height = attrs.height?.toString()?.toInteger() ?: 0
+            def base64Image = QRCodeService.generateQRCodeBase64(information ,attrs?.logoLink, attrs?.logoBase64, scaleLogo, width, height)
             if(base64Image){
                 out << "<img src='data:image/png;base64," + base64Image + "' />"
             }else{

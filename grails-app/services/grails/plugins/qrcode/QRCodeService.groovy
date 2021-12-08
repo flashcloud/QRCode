@@ -1,5 +1,8 @@
 package grails.plugins.qrcode
 
+import net.glxn.qrgen.core.image.ImageType
+import net.glxn.qrgen.javase.QRCode
+
 import java.awt.Graphics
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
@@ -141,19 +144,38 @@ class QRCodeService {
     }
 
     /**
+     * Create QR code pictures using ZXING Library
+     * @param information
+     * @return
+     */
+    def createQRCodeByZXING(Map<String, String> information, int width = 250, int height = 250) {
+        File img = QRCode.from(information.chl).withSize(width, height).to(ImageType.PNG).file()
+        BufferedImage bufferedImage = ImageIO.read(img)
+        return bufferedImage
+    }
+
+    /**
      * 
      * @param information
      * @param logoPath
      * @return
      */
-    def generateQRCodeBase64(Map<String, String> information,  String logoPath, String logoBase64){
-        BufferedImage image = createQRCodeByGoogle(information);
+    def generateQRCodeBase64(Map<String, String> information,  String logoPath, String logoBase64, Integer scaleLogo = 4, Integer width = 0, Integer height = 0){
+        //BufferedImage image = createQRCodeByGoogle(information);
+        BufferedImage image = null
+
+        if (!width || !height)
+            image = createQRCodeByZXING(information)
+        else
+            image = createQRCodeByZXING(information, width, height)
+        scaleLogo = scaleLogo ?: 4
+
         if(image){
             
             def logoImage = getLogoImageFrom(logoPath)
             logoImage = logoImage?logoImage:decodeBase64ToImage(logoBase64)            
             
-            BufferedImage overlay = scaleImage(logoImage, image.getHeight()/4)
+            BufferedImage overlay = scaleImage(logoImage, image.getHeight()/scaleLogo)
             def result = combineImage(image, overlay);
             return encodeImageToBase64(result);
         }
